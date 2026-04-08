@@ -54,14 +54,12 @@ async function fetchChartJson(symbol: string): Promise<unknown | null> {
     }
   }
 
-  // Dev: Vite proxy (bez CORS)
-  if (import.meta.env.DEV) {
-    const proxied = `/yahoo-api${path}`
-    const data = await tryFetch(proxied)
-    if (data) return data
-  }
+  // Stejný origin jako aplikace: Vite dev/preview proxy nebo Vercel rewrite → bez CORS
+  const proxied = `/yahoo-api${path}`
+  const viaProxy = await tryFetch(proxied)
+  if (viaProxy) return viaProxy
 
-  // Přímý požadavek (někdy funguje z prohlížeče)
+  // Přímý požadavek (obvykle selže CORS v prohlížeči mimo vlastní proxy)
   const direct = await tryFetch(fullUrl)
   if (direct) return direct
 
